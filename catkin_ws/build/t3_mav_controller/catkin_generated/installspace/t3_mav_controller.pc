@@ -1,0 +1,8 @@
+prefix=/home/pwyong/Desktop/catkin_ws/install
+
+Name: t3_mav_controller
+Description: Description of t3_mav_controller
+Version: 1.0.0
+Cflags: -I${prefix}/include -I/usr/include/eigen3
+Libs: -L${prefix}/lib -lt3_mav_controller
+Requires: roscpp std_msgs

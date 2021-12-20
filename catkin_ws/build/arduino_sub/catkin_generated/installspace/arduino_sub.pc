@@ -1,0 +1,8 @@
+prefix=/home/pwyong/Desktop/catkin_ws/install
+
+Name: arduino_sub
+Description: Description of arduino_sub
+Version: 0.0.0
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib -larduino_sub
+Requires: roscpp std_msgs
