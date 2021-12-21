@@ -5,7 +5,7 @@
 //Arduino Due based 6 channel R/C Reader + Signal Writer to 4 ESCs for T3_Multirotor
 //Modified for
 //ROS competible system
-//Modified for
+//Modified for 
 //Arduino Due based 8 channel Sbus + Signal Writer to 4 ESCs for T4_Multirotor
 
 //reference_publish:  http://wiki.ros.org/rosserial_arduino/Tutorials/Hello%20World
@@ -17,6 +17,27 @@
 // Arduino Due can change its frequency by modifying the varient.h file
 // C:\Users\sjlaz\AppData\Local\Arduino15\packages\arduino\hardware\sam\1.6.10\variants\arduino_due_x
 // Reference:         https://folk.uio.no/jeanra/Microelectronics/GettingTheBestOutOfPWMDue.html
+// What to change----------------------------------------------------------------------------------------
+///*
+// * PWM
+// */
+//#define PWM_INTERFACE    PWM
+//#define PWM_INTERFACE_ID  ID_PWM
+//#define PWM_FREQUENCY   456
+//#define PWM_MAX_DUTY_CYCLE  1023
+//#define PWM_MIN_DUTY_CYCLE  0
+//#define PWM_RESOLUTION    10
+//
+///*
+// * TC
+// */
+//#define TC_INTERFACE        TC0
+//#define TC_INTERFACE_ID     ID_TC0
+//#define TC_FREQUENCY        456
+//#define TC_MAX_DUTY_CYCLE   1023
+//#define TC_MIN_DUTY_CYCLE   0
+//#define TC_RESOLUTION      10
+//-------------------------------------------------------------------------------------------------------
 
 // Update Logs.
 // 2016.05.04 First build
@@ -117,6 +138,19 @@ void writePWM_Kill() {
 
   writePWM(u1, u2, u3, u4);
 }
+void writePWM_Max() {
+  u1 = 2000;
+  u2 = 2000;
+  u3 = 2000;
+  u4 = 2000;
+
+  u1 = constrain( u1, 1000, 2000 );
+  u2 = constrain( u2, 1000, 2000 );
+  u3 = constrain( u3, 1000, 2000 );
+  u4 = constrain( u4, 1000, 2000 );
+
+  writePWM(u1, u2, u3, u4);
+}
 
 void writePWM_Upboard(const std_msgs::Int16MultiArray &cmd_msg) {
   u1 = cmd_msg.data[0];
@@ -129,9 +163,7 @@ void writePWM_Upboard(const std_msgs::Int16MultiArray &cmd_msg) {
   u3 = constrain( u3, 1000, 2000 );
   u4 = constrain( u4, 1000, 2000 );
   //Kill UAV================================================================================
-//  if ( channel(4) < 1023 ) {
-//    writePWM_Kill();
-//  }
+  
 //  //----------------------------------------------------------------------------------------
 //
 //  //Under Upboard's command==================================================================
@@ -264,7 +296,7 @@ void setup() {
 
 uint32_t sbus_time=0, update_time=0;
 void loop() {
-  uint32_t start_time = micros();
+//  uint32_t start_time = micros();
     if(sbus_time-update_time>20000){
       update_channels();
       sbus_msg.data[0] = channel(1);
@@ -282,14 +314,22 @@ void loop() {
     else{
       sbus_time=micros();
     }
- 
-  writePWM(u1, u2, u3, u4);
-//  writePWM_Kill();
- 
-  loop_timer.publish(&loop_time);
+  if ( channel(4) < 1023 ) {
+    writePWM_Kill();
+  }
+  else{
+    writePWM(u1, u2, u3, u4);
+  }
+  //The following two lines are for DJI Snail ESC Calibration
+  // Single beep: Min-Max setting
+  // Double beep: Rotation direction
+//    if(sbus_msg.data[4]<1024)  writePWM_Kill();
+//    else writePWM_Max();
+  
+//  loop_timer.publish(&loop_time);
   // For ROS (R/W to Up-board ROS)============================================================
- 
+  
   nh.spinOnce();
   delay(2);
-  loop_time.data = micros()-start_time;
-} 
+//  loop_time.data = micros()-start_time;
+}
